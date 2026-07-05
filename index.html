@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>清迈7日行程 · 自然户外 · 朋友团</title>
+<meta name="description" content="7月15-22日清迈旅行：素贴山、清迈大学、大象保护区、丛林飞跃、奶奶厨房烹饪课、茵他侬山、粘粘瀑布、古树公园、Skugga巧克力、JJ Market、塔佩门">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--bg-primary:#fff;--bg-secondary:#f5f5f7;--bg-grouped:#f2f2f7;--bg-elevated:#fff;--text-primary:#1d1d1f;--text-secondary:#86868b;--text-tertiary:#aeaeb2;--accent:#0071e3;--tint-red:#ff3b30;--tint-orange:#ff9500;--tint-green:#34c759;--tint-blue:#007aff;--tint-purple:#af52de;--separator:rgba(60,60,67,.12);--shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 14px rgba(0,0,0,.08);--shadow-lg:0 8px 30px rgba(0,0,0,.12);--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;background:var(--bg-secondary);color:var(--text-primary);-webkit-font-smoothing:antialiased;line-height:1.47;letter-spacing:-0.022em}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+#map{width:100%;height:40vh;min-height:280px;position:sticky;top:0;z-index:100}
+.locate-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:none;box-shadow:0 1px 4px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+.locate-btn.active{color:#007aff}
+@keyframes loc-pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.4);opacity:0}}
+.loc-pulse{width:14px;height:14px;border-radius:50%;background:rgba(0,122,255,.25);animation:loc-pulse 1.6s ease-out infinite}
+.tabs{display:flex;gap:6px;padding:12px 16px;overflow-x:auto;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(20px);position:sticky;top:40vh;z-index:99;border-bottom:.5px solid var(--separator);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:7px 16px;border-radius:980px;border:none;background:var(--bg-grouped);color:var(--text-secondary);font-size:14px;font-weight:500;cursor:pointer;transition:all .25s;white-space:nowrap}
+.tab:active{transform:scale(.96)}.tab.active{background:var(--accent);color:#fff}
+.content{max-width:680px;margin:0 auto;padding:16px 16px calc(24px + var(--safe-bottom))}
+.hero{text-align:center;padding:28px 20px 20px}.hero h1{font-size:28px;font-weight:700;letter-spacing:-0.025em}.hero .subtitle{font-size:17px;color:var(--text-secondary);margin-top:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.info-card{background:var(--bg-elevated);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-sm)}.info-card .label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px}.info-card .value{font-size:15px;font-weight:600}
+.section-head{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;padding:20px 0 8px}
+.day-head{padding:20px 0 12px}.day-head h2{font-size:22px;font-weight:700}.day-head p{font-size:15px;color:var(--text-secondary);margin-top:2px}
+.timeline{position:relative;padding-left:24px}.timeline::before{content:'';position:absolute;left:7px;top:20px;bottom:20px;width:1.5px;background:var(--separator)}
+.tl-item{position:relative;margin-bottom:10px}
+.tl-dot{position:absolute;left:-20px;top:18px;width:10px;height:10px;border-radius:50%;z-index:1;box-shadow:0 0 0 3px var(--bg-secondary)}
+.tl-dot.food{background:var(--tint-red)}.tl-dot.spot{background:var(--tint-blue)}.tl-dot.hotel{background:var(--tint-orange)}.tl-dot.drink{background:var(--tint-purple)}.tl-dot.transport{background:var(--text-tertiary)}
+.card{background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);transition:box-shadow .25s;cursor:pointer}.card:active{box-shadow:var(--shadow-md)}
+.card .time{font-size:12px;font-weight:600;color:var(--text-tertiary)}.card .name{font-size:17px;font-weight:600;margin:2px 0 4px;display:flex;align-items:center;gap:6px}.card .desc{font-size:14px;color:var(--text-secondary);line-height:1.45}
+.badge{display:inline-flex;font-size:11px;font-weight:700;padding:1px 7px;border-radius:4px}.badge.food{background:rgba(255,59,48,.1);color:var(--tint-red)}.badge.spot{background:rgba(0,122,255,.1);color:var(--tint-blue)}.badge.drink{background:rgba(175,82,222,.1);color:var(--tint-purple)}
+.budget{display:inline-block;margin-top:6px;padding:3px 10px;background:var(--bg-grouped);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);font-weight:500}
+.pays{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.pay{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600}.pay.ok{background:rgba(52,199,89,.1);color:var(--tint-green)}.pay.no{background:rgba(255,59,48,.08);color:var(--tint-red)}.pay.idk{background:rgba(255,149,0,.1);color:var(--tint-orange)}
+.links{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none!important;transition:filter .2s}.btn:active{filter:brightness(.9)}
+.btn.nav{background:var(--accent);color:#fff}.btn.xhs{background:#ff2442;color:#fff}.btn.dp{background:#ffa700;color:#fff}.btn.rsv{background:var(--tint-green);color:#fff}
+.travel-bar{display:flex;align-items:center;gap:5px;padding:3px 0 3px 24px;font-size:11px;color:var(--text-tertiary);line-height:1.4;flex-wrap:wrap;margin-bottom:2px}
+.travel-bar .tb-walk{color:var(--tint-green)}.travel-bar .tb-taxi{color:var(--accent)}.travel-bar .tb-note{color:var(--tint-orange)}
+.as-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}.as-overlay.show{opacity:1;pointer-events:auto}
+.as-sheet{width:100%;max-width:420px;padding:0 8px 34px;transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}.as-overlay.show .as-sheet{transform:translateY(0)}
+.as-group{background:rgba(255,255,255,.88);backdrop-filter:blur(20px);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.as-group .as-item{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;font-size:18px;color:#007aff;font-weight:500;border:none;background:none;width:100%;cursor:pointer}.as-group .as-item+.as-item{border-top:.5px solid rgba(0,0,0,.12)}.as-group .as-item:active{background:rgba(0,0,0,.06)}.as-cancel{font-weight:600}
+.details{margin-top:10px;padding-top:10px;border-top:.5px solid var(--separator);font-size:13px;color:var(--text-secondary);line-height:1.6}.details.closed{display:none}
+.day-list .card{margin-bottom:8px}.day-list .card .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.pay-summary{background:var(--bg-elevated);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);font-size:13px;line-height:1.7;margin-bottom:10px}.pay-summary h4{font-size:14px;font-weight:700;margin-bottom:4px}.pay-summary .warn{color:var(--tint-red)}.pay-summary .ok-text{color:var(--tint-green)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 0;font-size:12px;color:var(--text-secondary)}.legend-item{display:flex;align-items:center;gap:5px}.legend-dot{width:8px;height:8px;border-radius:50%}
+.leaflet-popup-content-wrapper{border-radius:var(--radius-md)!important;box-shadow:var(--shadow-lg)!important}.leaflet-popup-content{font-size:14px!important;line-height:1.5!important;margin:12px 14px!important}.leaflet-popup-content a{color:var(--accent)!important}.leaflet-popup-tip{background:#fff!important}
+.leaflet-control-zoom a{width:34px!important;height:34px!important;line-height:34px!important;font-size:16px!important;border-radius:10px!important;background:rgba(255,255,255,.85)!important;backdrop-filter:blur(10px)!important;border:.5px solid var(--separator)!important;color:var(--text-primary)!important}.leaflet-control-zoom{border-radius:12px!important;overflow:hidden;box-shadow:var(--shadow-md)!important;border:none!important}.leaflet-control-attribution{font-size:9px!important;opacity:.5}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+<script>
+const HOTEL={name:'宁曼路酒店',lat:18.8027,lng:98.9690};
+
+const DAYS=[
+{id:0,label:'总览',color:'#0071e3',locations:[]},
+
+{id:1,label:'D1',date:'7月15日 周三',title:'到达清迈·宁曼路落地',color:'#ff9500',returnTo:{d:'0.4km',w:'5分钟'},locations:[
+{name:'清迈国际机场 CNX',lat:18.7669,lng:98.9627,type:'transport',time:'13:05',desc:'到达清迈国际机场，出来打车到宁曼路',detail:'出机场后用 Grab 打车到宁曼路约150泰铢',pay:{cash:1,card:1},gmap:'Chiang+Mai+International+Airport'},
+{name:'Khao Soi Nimman',lat:18.8047,lng:98.9703,type:'food',time:'15:00',desc:'第一碗咖喱面！清迈必吃',detail:'Khao Soi 是清迈招牌菜\n浓椰奶咖喱汤底配两种面条（软+脆）\n加酸菜和红葱头一起吃',budget:'\u0e3260-80/碗',pay:{cash:1,card:0.5},dianping:false,xhsKeyword:'清迈咖喱面Khao Soi宁曼路',gmap:'Khao+Soi+Nimman+Chiang+Mai',travel:{d:'5.8km',t:'12分钟'}},
+{name:'One Nimman',lat:18.8023,lng:98.9695,type:'spot',time:'16:00',desc:'宁曼路地标商业区，欧式庭院风格',detail:'半户外商业区，建筑很出片\n有精品店、咖啡馆、餐厅',pay:{cash:1,card:1,alipay:0.5},xhsKeyword:'清迈One Nimman宁曼路',gmap:'One+Nimman+Chiang+Mai',travel:{d:'0.4km',w:'5分钟',t:'1分钟'}},
+{name:'Warm Up Cafe',lat:18.8055,lng:98.9688,type:'drink',time:'19:00',desc:'清迈夜生活地标，朋友团喝一杯',detail:'清迈老牌夜店/酒吧\n人均消费200-400泰铢\n周三人不算多',budget:'\u0e32300-500/人',pay:{cash:1,card:1},dianping:false,xhsKeyword:'清迈Warm Up Cafe宁曼路酒吧',gmap:'Warm+Up+Cafe+Chiang+Mai',travel:{d:'0.5km',w:'6分钟',t:'1分钟'}}
+]},
+
+{id:2,label:'D2',date:'7月16日 周四',title:'素贴山·清迈大学·惠通涛湖',color:'#34c759',returnTo:{d:'0.4km',w:'5分钟'},locations:[
+{name:'双龙寺 Wat Phra That Doi Suthep',lat:18.8051,lng:98.9217,type:'spot',time:'09:00',desc:'清迈最重要寺庙，山顶金塔，俯瞰全城',detail:'清迈地标，海拔1080米\n门票30泰铢，缆车20泰铢\n雨季上午晴天概率高，建议早去\n穿长裤，遮肩膀',budget:'\u0e3250 门票',pay:{cash:1,card:0},xhsKeyword:'清迈双龙寺素贴山Doi Suthep',gmap:'Wat+Phra+That+Doi+Suthep',travel:{d:'6.7km',t:'13分钟',n:'从酒店出发'}},
+{name:'清迈大学 Chiang Mai University',lat:18.8047,lng:98.9527,type:'spot',time:'10:30',desc:'泰国最美大学之一，素贴山脚下，校园湖景绝美',detail:'清迈大学主校区在素贴山脚下，下山顺路\n校园很大，标志性景点是 Ang Kaew 水库（湖）\n湖边拍照很出片，远山倒影\n大学前门有一条学生美食街，便宜好吃\n免费参观',pay:{cash:1,card:0},xhsKeyword:'清迈大学Chiang Mai University拍照',gmap:'Chiang+Mai+University',travel:{d:'4.4km',t:'9分钟'}},
+{name:'大学前门午餐',lat:18.8038,lng:98.9550,type:'food',time:'11:30',desc:'清迈大学前门美食街，学生价，便宜地道',detail:'大学正门外的 Huay Kaew 路一带\n有很多学生常去的小餐馆\n推荐试试：泰北香肠、猪脚饭、奶茶\n人均50-80泰铢',budget:'\u0e3250-80/人',pay:{cash:1,card:0},dianping:false,xhsKeyword:'清迈大学前门美食街',gmap:'Huay+Kaew+Road+Chiang+Mai+University',travel:{d:'0.4km',w:'4分钟',t:'1分钟'}},
+{name:'惠通涛湖 Huay Tung Tao',lat:18.8497,lng:98.9412,type:'spot',time:'13:00',desc:'素贴山脚的湖，竹屋伸入水面，发呆吃午饭',detail:'本地人周末去处，游客少\n租一个水上竹屋（50泰铢），坐着发呆\n湖边有烤鱼和小吃摊\n门票50泰铢\n雨天可以缩在竹屋里听雨',budget:'\u0e32100/人',pay:{cash:1,card:0},xhsKeyword:'清迈惠通涛湖Huay Tung Tao',gmap:'Huay+Tung+Tao+Lake+Chiang+Mai',travel:{d:'7.2km',t:'13分钟'}},
+{name:'宁曼路晚餐',lat:18.8047,lng:98.9703,type:'food',time:'18:00',desc:'宁曼路区域选一家，Rustic & Blue 或 Ginger Farm Kitchen',detail:'Rustic & Blue：宁曼路网红brunch/西餐，氛围好\nGinger Farm Kitchen：泰式创意菜，环境精致\n两家都在宁曼路核心区，步行可达',budget:'\u0e32300-500/人',pay:{cash:1,card:1,alipay:0.5},dianping:false,xhsKeyword:'清迈宁曼路餐厅Ginger Farm Kitchen',gmap:'Nimman+Road+Chiang+Mai+restaurant',travel:{d:'7.9km',t:'15分钟'}}
+]},
+
+{id:3,label:'D3',date:'7月17日 周五',title:'大象保护区全天体验',color:'#af52de',returnTo:{d:'3.0km',t:'6分钟'},locations:[
+{name:'Elephant Jungle Sanctuary',lat:19.0228,lng:98.8565,type:'spot',time:'08:00',desc:'伦理大象保护区，喂食、洗澡、泥浴，全天含午餐',detail:'必须提前预约！Klook 或官网订\n约2500泰铢/人全天含午餐和接送\n07:30酒店接送，约17:00回到宁曼路\n不骑象、不表演，纯互动体验\n带换洗衣物和毛巾，会弄脏\n雨季照常进行，泥浴反而更有趣',budget:'\u0e322500/人',pay:{cash:0,card:1,alipay:1},xhsKeyword:'清迈大象保护区Elephant Jungle Sanctuary',gmap:'Elephant+Jungle+Sanctuary+Chiang+Mai',reserve:'https://www.klook.com/zh-CN/activity/3631-elephant-jungle-sanctuary-chiang-mai/',travel:{n:'含酒店接送'}},
+{name:'Lila Thai Massage',lat:18.7900,lng:98.9850,type:'spot',time:'19:00',desc:'和大象玩了一天，来个泰式按摩回血',detail:'清迈老城内口碑按摩店\n传统泰式按摩300-500泰铢/2小时\n由清迈女子监狱基金会运营\n建议提前预约',budget:'\u0e32400/人',pay:{cash:1,card:1},xhsKeyword:'清迈Lila Thai Massage泰式按摩',gmap:'Lila+Thai+Massage+Chiang+Mai+Old+City',travel:{n:'送回酒店后打车',d:'3.0km',t:'6分钟'}}
+]},
+
+{id:4,label:'D4',date:'7月18日 周六',title:'丛林飞跃·粘粘瀑布·周六夜市',color:'#ff3b30',returnTo:{d:'4.1km',t:'9分钟'},locations:[
+{name:'Jungle Flight 丛林飞跃',lat:18.8871,lng:98.8508,type:'spot',time:'09:00',desc:'美萨谷丛林飞跃，高空滑索穿越雨林',detail:'Klook可订，约1500-2000泰铢/半天含接送\n最长索道约1km，刺激但安全\n08:00酒店接送，约13:00回到市区\n穿运动鞋和轻便衣服\n雨季可能临时调整，提前确认',budget:'\u0e321800/人',pay:{cash:0,card:1,alipay:1},xhsKeyword:'清迈丛林飞跃Jungle Flight体验',gmap:'Jungle+Flight+Chiang+Mai',reserve:'https://www.klook.com/zh-CN/activity/3475-jungle-flight-zipline-adventure-chiang-mai/',travel:{n:'含酒店接送'}},
+{name:'粘粘瀑布 Bua Tong',lat:19.5231,lng:98.8726,type:'spot',time:'14:30',desc:'能徒手攀爬的瀑布！石灰岩矿物沉积防滑，清迈最独特体验',detail:'免费！清迈最独特的自然体验\n丛林飞跃送回酒店后出发，车程约1小时20分钟\n瀑布共4段，前2段简单，后2段陡但有趣\n穿泳衣和防滑鞋，带换衣物\n现场有更衣室和储物柜\n雨季水量稍大但依然可爬，更刺激\n⚠️ 建议包车，Grab回程难叫',budget:'免费',pay:{cash:0,card:0},xhsKeyword:'清迈粘粘瀑布Bua Tong攀爬攻略',gmap:'Bua+Tong+Sticky+Waterfall+Chiang+Mai',travel:{d:'85km',t:'1小时20分钟',n:'从酒店出发，建议包车'}},
+{name:'周六夜市 Saturday Night Market',lat:18.7773,lng:98.9796,type:'spot',time:'18:00',desc:'瓦莱路周六夜市，古城南门，清迈最大夜市之一',detail:'每周六17:00-22:00，瓦莱路整条封路\n手工艺品、银器、漆器、街头小吃\n人很多，建议轻装出行\n雨天照常，有遮雨棚的部分摊位',pay:{cash:1,card:0,alipay:0.5},xhsKeyword:'清迈周六夜市Wua Lai攻略',gmap:'Saturday+Night+Market+Wua+Lai+Road+Chiang+Mai',travel:{d:'90km',t:'1小时25分钟'}}
+]},
+
+{id:5,label:'D5',date:'7月19日 周日',title:'JJ Market·奶奶厨房·古城·周日夜市',color:'#007aff',returnTo:{d:'3.0km',t:'6分钟'},locations:[
+{name:'JJ Market 真心市集',lat:18.8015,lng:98.9925,type:'spot',time:'06:30',desc:'清迈最大文创市集！周末限定，手作+咖啡+农夫市集',detail:'每周六日 6:30-15:00\n清迈最有名的文创市集\n手工艺品+有机农产品+咖啡+街头美食\n免费入场，早去人少好逛\n⚠️ 逛约1小时需赶回酒店等烹饪课接送\n周日市集规模最大，最热闹',pay:{cash:1,card:1,alipay:0.5},xhsKeyword:'清迈JJ Market真心市集Jing Jai',gmap:'Jing+Jai+Market+Chiang+Mai',travel:{d:'3.3km',t:'7分钟',n:'从酒店出发'}},
+{name:"奶奶厨房 Grandma's Home Cooking School",lat:18.6833,lng:98.9500,type:'spot',time:'08:00',desc:'有机农场学做泰餐！采摘食材+做4-5道菜+吃自己做的',detail:'必须提前预约！Klook/携程可订\n约1000-1200泰铢/人含接送和午餐\n08:00酒店接送，约13:00送回\n先逛本地菜市场认识食材，再去有机农场\n亲手做：冬阴功、绿咖喱、芒果糯米饭等4-5道菜\n做完就是午餐，吃得饱饱的\n零基础友好，朋友团一起做很好玩',budget:'\u0e321000-1200/人',pay:{cash:0,card:1,alipay:1},xhsKeyword:'清迈奶奶厨房烹饪课Grandma cooking school',gmap:"Grandma's+Home+Cooking+School+Chiang+Mai",reserve:'https://huodong.ctrip.com/ottd-activity/dest/t53850948.html',travel:{n:'先回酒店(7分钟) → 含酒店接送'}},
+{name:'契迪龙寺 Wat Chedi Luang',lat:18.7857,lng:98.9836,type:'spot',time:'14:30',desc:'古城内最大佛塔遗址，15世纪兰纳风格',detail:'门票40泰铢\n原高86米的佛塔1545年地震后损毁\n古城最壮观的寺庙\n穿长裤，遮肩膀',budget:'\u0e3240 门票',pay:{cash:1,card:0},xhsKeyword:'清迈契迪龙寺Wat Chedi Luang',gmap:'Wat+Chedi+Luang+Chiang+Mai',travel:{n:'送回酒店后打车',d:'4.0km',t:'8分钟'}},
+{name:'塔佩门 Tha Phae Gate · 喂鸽子',lat:18.7878,lng:98.9933,type:'spot',time:'15:15',desc:'清迈古城东门，红砖城墙+白鸽，必拍打卡点',detail:'清迈地标，古城唯一保存完好的城门\n每天早上9点后鸽子最多，傍晚也有\n现场有人卖鸽食（20泰铢/包）\n⚠️ 注意：有"鸽子帮"强制推销拍照，礼貌拒绝即可\n红砖城墙拍照很出片\n周日夜市就从这里开始，逛完直接赶集',budget:'\u0e3220 鸽食',pay:{cash:1,card:0},xhsKeyword:'清迈塔佩门喂鸽子Tha Phae Gate',gmap:'Tha+Phae+Gate+Chiang+Mai',travel:{d:'1.4km',w:'17分钟',t:'3分钟'}},
+{name:'周日夜市 Sunday Walking Street',lat:18.7892,lng:98.9847,type:'spot',time:'16:00',desc:'清迈最大夜市！从塔佩门到帕辛寺整条封路',detail:'每周日16:00-22:00，从塔佩门到帕辛寺\n清迈规模最大、最热闹的夜市\n手工艺品、画师、街头艺人、小吃摊\n人山人海，注意保管财物',pay:{cash:1,card:0,alipay:0.5},xhsKeyword:'清迈周日夜市Sunday Walking Street攻略',gmap:'Sunday+Walking+Street+Ratchadamnoen+Chiang+Mai',travel:{d:'0.3km',w:'4分钟',n:'就在塔佩门，沿路走即是'}}
+]},
+
+{id:6,label:'D6',date:'7月20日 周一',title:'茵他侬山国家公园·泰国最高峰',color:'#34c759',returnTo:{d:'76km',t:'1.5小时',n:'建议包车'},locations:[
+{name:'Wachirathan 瀑布',lat:18.5536,lng:98.5667,type:'spot',time:'09:00',desc:'茵他侬山沿途最壮观的瀑布',detail:'国家公园入口后第一个大景点\n高约80米，雨季水量惊人\n注意地面湿滑',budget:'含国家公园门票',pay:{cash:1,card:0},xhsKeyword:'清迈茵他侬Wachirathan瀑布',gmap:'Wachirathan+Waterfall+Doi+Inthanon',travel:{d:'68km',t:'1.5小时',n:'建议包车'}},
+{name:'国王王后双塔',lat:18.5914,lng:98.4852,type:'spot',time:'10:00',desc:'山顶皇家双塔，花园和云海',detail:'国王塔和王后塔\n花园四季有花，7月正是花期\n天气好可以看到云海',budget:'含门票',pay:{cash:1,card:0},xhsKeyword:'清迈茵他侬双塔King Queen Pagoda',gmap:'King+and+Queen+Pagodas+Doi+Inthanon',travel:{d:'12.9km',t:'24分钟'}},
+{name:'Kew Mae Pan 步道',lat:18.5965,lng:98.4821,type:'spot',time:'11:00',desc:'山顶最美步道，2.8km穿越苔藓森林',detail:'⚠️ 天气敏感：大雾或暴雨时关闭\n全程约2小时，需聘向导（200泰铢/团）\n穿越苔藓森林→高山草甸→观景台\n7月雨季建议上午走，下午容易起雾\n如果关闭，改走Ang Ka Luang步道（200米木栈道）',budget:'\u0e32200 向导费',pay:{cash:1,card:0},xhsKeyword:'清迈茵他侬Kew Mae Pan步道',gmap:'Kew+Mae+Pan+Nature+Trail+Doi+Inthanon',travel:{d:'0.9km',w:'11分钟',t:'2分钟'}},
+{name:'山顶部落午餐',lat:18.5850,lng:98.4900,type:'food',time:'12:30',desc:'Karen族村寨餐厅，简餐和山泉咖啡',detail:'双塔附近有Karen族村寨\n简单泰餐和山泉滴漏咖啡\n海拔2565米，最高点附近\n带件外套，比市区低15度',budget:'\u0e32150-250/人',pay:{cash:1,card:0},dianping:false,xhsKeyword:'清迈茵他侬山顶午餐Karen村',gmap:'Doi+Inthanon+summit+restaurant',travel:{d:'2.1km',t:'4分钟',w:'25分钟'}},
+{name:'泰国最高峰观景台',lat:18.5884,lng:98.4862,type:'spot',time:'14:30',desc:'海拔2565米，泰国最高点打卡',detail:'有一个小步道走到最高点标志牌\n拍照打卡\n全年气温约10-20°C',pay:{cash:0,card:0},xhsKeyword:'清迈茵他侬最高峰2565米',gmap:'Doi+Inthanon+Summit+Thailand',travel:{d:'0.7km',w:'9分钟',t:'2分钟'}}
+]},
+
+{id:7,label:'D7',date:'7月21日 周二',title:'古树公园·Skugga巧克力庄园',color:'#ff9500',returnTo:{d:'0.4km',w:'5分钟'},locations:[
+{name:'古树公园·水中雨树 + 午餐',lat:19.2167,lng:98.8167,type:'spot',time:'09:30',desc:'百年雨树立在水中央！坐木船去看，清迈新晋顶流',detail:'诗丽兰纳国家公园 / 湄昂水坝区域\n从宁曼路开车约1小时\n坐木船到水中雨树（船费约300-500泰铢/船）\n半树沉水、树冠凌空的奇观\n码头附近有简餐和烤鱼，午餐在此解决\n雨季水位高，景观最壮观\n注意防晒，船上无遮阳',budget:'\u0e32500/船+\u0e32100午餐',pay:{cash:1,card:0},xhsKeyword:'清迈古树公园水中雨树巨型雨树',gmap:'Giant+Rain+Tree+Sri+Lanna+National+Park+Chiang+Mai',travel:{d:'55km',t:'1小时',n:'建议包车'}},
+{name:'Skugga Estate 巧克力庄园',lat:18.9167,lng:99.0833,type:'spot',time:'13:30',desc:'亲手做巧克力！庄园含葡萄园、咖啡烘焙、巧克力实验室',detail:'必须提前预约！在塔佩门店或宁曼一号店预约\n加农场微信确认时间\n约2小时巧克力制作workshop\n亲手完成：筛选可可豆→研磨→调温→注模\n庄园还有隐藏汽车私人藏馆可以参观\n免费入场，workshop另收费\n从古树公园开车约55分钟',budget:'\u0e32500-800/人 workshop',pay:{cash:1,card:1},xhsKeyword:'清迈Skugga巧克力工厂体验预约',gmap:'Skugga+Estate+Chiang+Mai',reserve:'https://www.skuggalife.com/',travel:{d:'45km',t:'55分钟'}},
+{name:'告别晚餐宁曼路',lat:18.8047,lng:98.9703,type:'food',time:'18:00',desc:'最后一晚，宁曼路挑一家好的收尾',detail:'推荐：\nThe Service 1921（殖民风格餐厅，需预约）\nHuen Muan Jai（北泰传统菜，老字号）\nDavid\'s Kitchen（法餐，清迈最好的西餐之一）\n朋友团喝最后一杯',budget:'\u0e32500-1000/人',pay:{cash:1,card:1,alipay:0.5},dianping:false,xhsKeyword:'清迈宁曼路告别晚餐推荐',gmap:'Nimman+Road+Chiang+Mai+fine+dining',travel:{d:'28km',t:'40分钟'}}
+]},
+
+{id:8,label:'D8',date:'7月22日 周三',title:'返程·清迈→家',color:'#86868b',locations:[
+{name:'宁曼路 Brunch',lat:18.8047,lng:98.9703,type:'food',time:'10:00',desc:'最后一顿，宁曼路咖啡馆brunch，慢慢吃',detail:'推荐：\nRistr8to（拉花冠军咖啡店）\nAkha Ama Coffee（本地精品咖啡）\nButter is Better（英式brunch）\n买点咖啡豆带回去',budget:'\u0e32200-300/人',pay:{cash:1,card:1,alipay:0.5},dianping:false,xhsKeyword:'清迈宁曼路咖啡馆brunch推荐',gmap:'Ristr8to+coffee+Chiang+Mai',travel:{d:'0.4km',w:'5分钟',t:'1分钟'}},
+{name:'清迈机场 CNX',lat:18.7669,lng:98.9627,type:'transport',time:'12:00',desc:'打车到机场，14:10航班',detail:'宁曼路到机场Grab约150泰铢\n建议12:00出发，留足时间\n机场很小，提前1.5小时足够',pay:{cash:1,card:1},gmap:'Chiang+Mai+International+Airport',travel:{d:'5.8km',t:'11分钟'}}
+]}
+];
+
+function overviewContent(){
+return`
+<div class="hero"><h1>清迈 7 日 · 自然户外</h1><p class="subtitle">7月15日-22日 · 宁曼路 · 朋友团 · 自然与户外</p></div>
+<div class="info-grid">
+<div class="info-card"><div class="label">到达</div><div class="value">7/15 13:05 CNX</div></div>
+<div class="info-card"><div class="label">回程</div><div class="value">7/22 14:10 CNX</div></div>
+<div class="info-card"><div class="label">住宿</div><div class="value">宁曼路区域</div></div>
+<div class="info-card"><div class="label">主题</div><div class="value">自然·户外·市集</div></div>
+</div>
+<div class="section-head">行程概览</div>
+<div class="day-list">${DAYS.slice(1).map(d=>`<div class="card" onclick="go(${d.id})"><div class="name"><span class="dot" style="background:${d.color}"></span>${d.label} · ${d.title}</div><div class="desc">${d.date}</div></div>`).join('')}</div>
+<div class="section-head">支付提醒</div>
+<div class="pay-summary"><h4>💴 现金为王</h4>清迈大部分地方收现金（泰铢），小餐馆和夜市<strong>只收现金</strong>。建议到达后ATM取够泰铢。</div>
+<div class="pay-summary"><h4>💳 信用卡</h4>旅游餐厅、商场、活动平台可刷卡。Visa/Mastercard最通用。</div>
+<div class="pay-summary"><h4>📱 支付宝</h4>Klook、部分旅游餐厅和便利店支持。覆盖率提升中。</div>
+<div class="pay-summary"><h4>⚠️ 雨季注意（7月）</h4><span class="warn">7月是清迈雨季，下午常有雷阵雨。</span>户外活动安排上午，下午灵活调整。茵他侬步道可能因天气关闭。带轻便雨衣。</div>
+<div class="section-head">必须提前预约</div>
+<div class="pay-summary"><h4>📅 预约清单</h4>• 大象保护区（Klook）<br>• 丛林飞跃（Klook）<br>• 奶奶厨房烹饪课（Klook/携程）<br>• <strong>Skugga巧克力工厂</strong>（塔佩门店/宁曼一号店现场预约，加农场微信确认）</div>
+<div class="section-head">交通提醒</div>
+<div class="pay-summary"><h4>🚗 打车用 Grab</h4>清迈主要打车App，可现金或信用卡支付。宁曼路区域内多步行可达。</div>
+<div class="pay-summary"><h4>🚐 远郊建议包车</h4>D4粘粘瀑布（85km北郊）、D6茵他侬（76km南郊）、D7古树公园+Skugga（东北郊），建议提前在Klook/淘宝订包车，比Grab划算且回程有保障。</div>
+<div class="section-head">图例</div>
+<div class="legend">
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-red)"></div>餐厅</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-blue)"></div>景点</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-purple)"></div>酒吧</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--tint-orange)"></div>酒店/交通</div>
+</div>`;
+}
+
+// ═══ ENGINE ═══
+const map=L.map('map',{center:[HOTEL.lat,HOTEL.lng],zoom:12,zoomControl:false,attributionControl:true});
+L.control.zoom({position:'topright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+
+const LocateControl=L.Control.extend({options:{position:'bottomright'},onAdd(){const b=L.DomUtil.create('button','locate-btn');b.innerHTML='📍';b.title='我的位置';L.DomEvent.disableClickPropagation(b);b.addEventListener('click',()=>{b.classList.add('active');map.locate({setView:true,maxZoom:15})});return b}});
+new LocateControl().addTo(map);
+let locMarker,locCircle;
+map.on('locationfound',e=>{const r=e.accuracy/2;if(locMarker){locMarker.setLatLng(e.latlng);locCircle.setLatLng(e.latlng).setRadius(r)}else{locMarker=L.marker(e.latlng,{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#007aff;border:2.5px solid #fff;box-shadow:0 0 6px rgba(0,122,255,.5)"></div><div class="loc-pulse" style="position:absolute;top:0;left:0"></div>',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:2000}).addTo(map);locCircle=L.circle(e.latlng,{radius:r,color:'#007aff',fillColor:'#007aff',fillOpacity:.08,weight:1}).addTo(map)}});
+map.on('locationerror',()=>{});
+
+function icon(c,e){return L.divIcon({className:'',html:`<div style="width:28px;height:28px;border-radius:50%;background:${c};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.18)">${e||''}</div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]})}
+if(HOTEL.lat)L.marker([HOTEL.lat,HOTEL.lng],{icon:icon('#ff9500','🏨'),zIndexOffset:1000}).addTo(map).bindPopup(`<b>${HOTEL.name}</b>`);
+
+let markers=[],polylines=[];
+const emojis={food:'🍽️',spot:'📍',hotel:'🏨',transport:'🚃',drink:'🍺'};
+function clearMap(){markers.forEach(m=>map.removeLayer(m));polylines.forEach(p=>map.removeLayer(p));markers=[];polylines=[]}
+
+function showDay(idx){
+clearMap();
+if(idx===0){const pts=[];DAYS.forEach(d=>d.locations.forEach(l=>{if(l.lat)pts.push([l.lat,l.lng])}));if(pts.length)map.fitBounds(pts,{padding:[30,30]});DAYS.slice(1).forEach(d=>{d.locations.filter(l=>l.time!=='—').forEach(l=>{const m=L.circleMarker([l.lat,l.lng],{radius:4,fillColor:d.color,color:'#fff',weight:1.5,fillOpacity:.9}).addTo(map).bindPopup(`<b>${l.name}</b><br><span style="color:#86868b">${d.label}</span>`);markers.push(m)})});return}
+const day=DAYS.find(d=>d.id===idx);if(!day)return;const coords=[];
+day.locations.forEach(l=>{if(!l.lat)return;const m=L.marker([l.lat,l.lng],{icon:icon(day.color,emojis[l.type]||'📌')}).addTo(map);const gq=l.gmap||encodeURIComponent(l.name);m.bindPopup(`<b>${l.name}</b>${l.time!=='—'?'<br><span style="color:#86868b">'+l.time+'</span>':''}<br>${l.desc}${l.budget?'<br><span style="color:#ff9500">'+l.budget+'</span>':''}<br><a href="#" onclick="event.preventDefault();openAS('${l.name.replace(/'/g,"\\'")}',${l.lat},${l.lng},'${gq}')">📍 导航</a>${l.xhs?' · <a href="'+l.xhs+'" target="_blank">📕 小红书</a>':''}`);markers.push(m);if(l.time!=='—')coords.push([l.lat,l.lng])});
+if(coords.length>1){const pl=L.polyline(coords,{color:day.color,weight:2.5,opacity:.5,dashArray:'6,5'}).addTo(map);polylines.push(pl)}
+if(coords.length)map.fitBounds(coords,{padding:[40,40],maxZoom:14});
+}
+
+function payChips(p){if(!p)return'';let h='<div class="pays">';const m={cash:'💴',card:'💳',alipay:'支付宝',wechat:'微信'};for(const[k,l]of Object.entries(m)){if(p[k]!==undefined){const c=p[k]===1?'ok':p[k]===0.5?'idk':'no';h+=`<span class="pay ${c}">${l}</span>`}}return h+'</div>'}
+
+const IN_APP_WEBVIEW=(()=>{const ua=(navigator.userAgent||'').toLowerCase();return/micromessenger|xhs|xhsdiscover|tiktok|aweme|weibo|qq\/|alipayclient|dingtalk|lark|feishu|ucbrowser|baiduboxapp|toutiao/.test(ua)})();
+function xhsK(l){return(l.xhsKeyword||l.name||'').replace(/⭐.*$/g,'').replace(/（.*?）/g,'').replace(/\(.*?\)/g,'').trim()}
+function xhsApp(l){return`xhsdiscover://search/result?keyword=${encodeURIComponent(xhsK(l))}&target_search=notes&source=deeplink`}
+function xhsWeb(l){return`https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(xhsK(l))}&source=web_explore_feed`}
+function dpK(l){return(l.dianpingKeyword||l.name||'').replace(/⭐.*$/g,'').replace(/（.*?）/g,'').replace(/\(.*?\)/g,'').trim()}
+
+window._extLocs={};DAYS.forEach(d=>d.locations.forEach(l=>{window._extLocs[`${d.id}::${l.name}`]=l}));
+function openExt(key,kind){const l=window._extLocs[key];if(!l)return false;window.location.href=kind==='xhs'?(IN_APP_WEBVIEW?xhsWeb(l):xhsApp(l)):'about:blank';return false}
+function openXhs(key){return openExt(key,'xhs')}
+
+function travelHTML(t){
+if(!t)return'';
+if(!t.d&&t.n)return`<div class="travel-bar">🚐 <span class="tb-note">${t.n}</span></div>`;
+let parts=[`<span>${t.d}</span>`];
+if(t.w)parts.push(`<span class="tb-walk">🚶${t.w}</span>`);
+if(t.t)parts.push(`<span class="tb-taxi">🚗${t.t}</span>`);
+if(t.n)parts.push(`<span class="tb-note">${t.n}</span>`);
+return`<div class="travel-bar">${parts.join(' · ')}</div>`;
+}
+
+function locCard(loc,di){
+const dot=loc.type==='food'?'food':loc.type==='spot'?'spot':loc.type==='drink'?'drink':loc.type==='hotel'?'hotel':'transport';
+const bdg=loc.type==='food'?'<span class="badge food">餐</span>':loc.type==='spot'?'<span class="badge spot">景</span>':loc.type==='drink'?'<span class="badge drink">饮</span>':'';
+const uid=`d${di}-${loc.name.replace(/\W/g,'')}`;
+const lk=`${di}::${loc.name}`;
+const gq=loc.gmap||encodeURIComponent(loc.name);
+let lnk=`<button class="btn nav" onclick="openAS('${loc.name.replace(/'/g,"\\'")}',${loc.lat},${loc.lng},'${gq}')">📍 导航</button>`;
+if(loc.xhs||loc.xhsKeyword){const xh=IN_APP_WEBVIEW?xhsWeb(loc):xhsApp(loc);const xl=IN_APP_WEBVIEW?'📕 小红书':'📕 小红书 App';lnk+=`<a href="${xh}" onclick="return openXhs('${lk.replace(/'/g,"\\'")}')" class="btn xhs">${xl}</a>`}
+if(loc.reserve)lnk+=`<a href="${loc.reserve}" target="_blank" class="btn rsv">📅 预约</a>`;
+return`<div class="tl-item"><div class="tl-dot ${dot}"></div><div class="card" onclick="if(!event.target.closest('.btn,.links'))toggle('${uid}')"><div class="time">${loc.time!=='—'?loc.time:'备选'}</div><div class="name">${bdg} ${loc.name}</div><div class="desc">${loc.desc}</div>${loc.budget?'<div class="budget">'+loc.budget+'</div>':''}${payChips(loc.pay)}<div class="links">${lnk}</div>${loc.detail?'<div class="details" id="'+uid+'">'+loc.detail.replace(/\n/g,'<br>')+'</div>':''}</div></div>`;
+}
+
+function renderDay(idx){const d=DAYS.find(x=>x.id===idx);if(!d)return'';const main=d.locations.filter(l=>l.time!=='—');const alt=d.locations.filter(l=>l.time==='—');let h=`<div class="day-head"><h2>${d.title}</h2><p>${d.date}</p></div>`;if(main.length){h+='<div class="section-head">行程</div><div class="timeline">';main.forEach(l=>{if(l.travel)h+=travelHTML(l.travel);h+=locCard(l,idx)});if(d.returnTo){h+=travelHTML(d.returnTo);h+=`<div class="tl-item"><div class="tl-dot hotel" style="background:var(--tint-orange)"></div><div class="card" style="opacity:.7"><div class="time">回酒店</div><div class="name">🏨 ${HOTEL.name}</div></div></div>`}h+='</div>'}if(alt.length){h+='<div class="section-head">备选</div><div class="timeline">';alt.forEach(l=>h+=locCard(l,idx));h+='</div>'}return h}
+
+let cur=0;const tabsEl=document.getElementById('tabs'),contentEl=document.getElementById('content');
+DAYS.forEach(d=>{const b=document.createElement('button');b.className='tab'+(d.id===0?' active':'');b.dataset.day=d.id;b.textContent=d.label;tabsEl.appendChild(b)});
+function go(idx){cur=idx;tabsEl.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.day===idx));contentEl.innerHTML=idx===0?overviewContent():renderDay(idx);showDay(idx);contentEl.scrollTo({top:0});const tab=tabsEl.querySelector(`[data-day="${idx}"]`);if(tab)tab.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+function toggle(id){const el=document.getElementById(id);if(el)el.classList.toggle('closed')}
+tabsEl.addEventListener('click',e=>{const t=e.target.closest('.tab');if(t)go(+t.dataset.day)});
+go(0);
+
+const asOverlay=document.createElement('div');asOverlay.className='as-overlay';asOverlay.innerHTML=`<div class="as-sheet"><div class="as-group" id="as-opts"></div><div class="as-group"><button class="as-item as-cancel" onclick="closeAS()">取消</button></div></div>`;document.body.appendChild(asOverlay);asOverlay.addEventListener('click',e=>{if(e.target===asOverlay)closeAS()});
+const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+function amapAppUrl(n,la,ln){const s=IS_IOS?'iosamap':'androidamap';return`${s}://viewMap?sourceApplication=trip&poiname=${encodeURIComponent(n)}&lat=${la}&lon=${ln}&dev=0`}
+function amapWebUrl(n,la,ln){return`https://uri.amap.com/marker?position=${ln},${la}&name=${encodeURIComponent(n)}&src=trip&coordinate=wgs84&callnative=1`}
+function openAmap(n,la,ln){if(IN_APP_WEBVIEW){window.open(amapWebUrl(n,la,ln));return}window.location.href=amapAppUrl(n,la,ln)}
+function openAS(n,la,ln,g){const q=g||encodeURIComponent(n);const en=encodeURIComponent(n);const sn=n.replace(/'/g,"\\'");const au=IN_APP_WEBVIEW?`https://maps.apple.com/?q=${la},${ln}&ll=${la},${ln}&name=${en}`:`maps://maps.apple.com/?q=${la},${ln}&name=${en}`;const gu=`https://www.google.com/maps/search/?api=1&query=${q}`;document.getElementById('as-opts').innerHTML=`<button class="as-item" onclick="window.open('${au}');closeAS()">🍎 Apple Maps</button><button class="as-item" onclick="window.open('${gu}');closeAS()">🗺️ Google Maps</button><button class="as-item" onclick="openAmap('${sn}',${la},${ln});closeAS()">🧭 高德地图</button>`;asOverlay.classList.add('show')}
+function closeAS(){asOverlay.classList.remove('show')}
+</script>
+</body>
+</html>
